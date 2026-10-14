@@ -1,0 +1,45 @@
+# ==============================================================
+# MÓDULO 1: DEFINICIÓN DE SEÑALES EN EL DOMINIO DEL TIEMPO
+# --------------------------------------------------------------
+# Objetivo: construir el eje temporal y las señales elementales
+# (pulso rectangular, escalón y senoidal) que serán analizadas
+# posteriormente mediante la Transformada de Fourier.
+# ==============================================================
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ---------- Parámetros de muestreo ----------
+# fs : frecuencia de muestreo en Hz. Debe cumplir el Teorema de
+#      Nyquist (fs > 2*f_max) para evitar aliasing.
+# T  : duración total de la señal en segundos.
+# N  : número total de muestras = fs * T.
+# t  : vector de tiempo discreto, sin incluir el punto final
+#      (endpoint=False) para evitar duplicar la muestra 0.
+fs = 1000
+T  = 2.0
+N  = int(fs * T)
+t  = np.linspace(0, T, N, endpoint=False)
+
+# ---------- (a) Pulso rectangular ----------
+# Definido como 1 en el intervalo [0.5, 1.0] s y 0 en el resto.
+# np.where aplica la condición elemento a elemento sobre el vector t.
+# Se usa una función característica booleana -> 1.0 / 0.0.
+x_pulso = np.where((t >= 0.5) & (t <= 1.0), 1.0, 0.0)
+
+# ---------- (b) Función escalón unitario ----------
+# Vale 0 antes de t=1.0 s y 1 a partir de ese instante.
+# Representa una discontinuidad abrupta -> contiene altas frecuencias.
+x_escalon = np.where(t >= 1.0, 1.0, 0.0)
+
+# ---------- (c) Función senoidal ----------
+# Senoidal pura de 20 Hz y amplitud unitaria.
+# Es una señal periódica -> su espectro es discreto (un solo pico).
+f0 = 20
+x_senoidal = np.sin(2 * np.pi * f0 * t)
+
+# ---------- Verificación rápida ----------
+print(f"Frecuencia de muestreo : {fs} Hz")
+print(f"Número de muestras     : {N}")
+print(f"Resolución frecuencial : {fs/N:.4f} Hz")
+print(f"Frecuencia de Nyquist  : {fs/2} Hz")

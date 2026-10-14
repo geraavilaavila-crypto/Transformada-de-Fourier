@@ -1,0 +1,78 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ============================================================
+# PARÁMETROS GLOBALES DE MUESTREO
+# ============================================================
+fs = 1000            # Frecuencia de muestreo [Hz]
+T  = 2.0             # Duración [s]
+N  = int(fs * T)     # Número de muestras
+t  = np.linspace(0, T, N, endpoint=False)
+f = np.fft.fftfreq(N, d=1/fs)   # Vector de frecuencias
+
+# ============================================================
+# FUNCIÓN AUXILIAR: cálculo y graficación de FFT (magnitud y fase)
+# ============================================================
+def fft_analisis(x, t, fs, titulo):
+    N = len(x)
+    X = np.fft.fft(x)
+    f = np.fft.fftfreq(N, d=1/fs)
+
+    # Solo frecuencias positivas
+    idx = f >= 0
+    f_pos   = f[idx]
+    X_pos   = X[idx]
+    mag     = np.abs(X_pos) / N * 2          # Magnitud normalizada
+    fase    = np.angle(X_pos)                # Fase en radianes
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 4))
+
+    # ---- Dominio del tiempo ----
+    axes[0].plot(t, x, 'b', linewidth=1.2)
+    axes[0].set_title(f'{titulo}\nDominio del Tiempo')
+    axes[0].set_xlabel('Tiempo [s]'); axes[0].set_ylabel('Amplitud')
+    axes[0].grid(alpha=0.3)
+
+    # ---- Magnitud del espectro ----
+    axes[1].stem(f_pos, mag, basefmt=" ", markerfmt='ro')
+    axes[1].set_title('Magnitud del Espectro')
+    axes[1].set_xlabel('Frecuencia [Hz]'); axes[1].set_ylabel('|X(f)|')
+    axes[1].set_xlim(0, 200)
+    axes[1].grid(alpha=0.3)
+
+    # ---- Fase del espectro ----
+    axes[2].stem(f_pos, fase, basefmt=" ", markerfmt='go')
+    axes[2].set_title('Fase del Espectro')
+    axes[2].set_xlabel('Frecuencia [Hz]'); axes[2].set_ylabel('∠X(f) [rad]')
+    axes[2].set_xlim(0, 200)
+    axes[2].set_ylim(-np.pi, np.pi)
+    axes[2].grid(alpha=0.3)
+
+    plt.tight_layout(); plt.show()
+
+# ============================================================
+# 1. SEÑALES ELEMENTALES
+# ============================================================
+
+# --- (a) Pulso rectangular ---
+x_pulso = np.where((t >= 0.5) & (t <= 1.0), 1.0, 0.0)
+
+# --- (b) Función escalón (unitario) ---
+x_escalon = np.where(t >= 1.0, 1.0, 0.0)
+
+# --- (c) Función senoidal ---
+x_senoidal = np.sin(2 * np.pi * 20 * t)   # 20 Hz
+
+# --- Gráficas en el tiempo ---
+fig, axes = plt.subplots(3, 1, figsize=(10, 8))
+axes[0].plot(t, x_pulso, 'b');     axes[0].set_title('Pulso Rectangular')
+axes[1].plot(t, x_escalon, 'g');   axes[1].set_title('Función Escalón')
+axes[2].plot(t, x_senoidal, 'r');  axes[2].set_title('Función Senoidal 20 Hz')
+for ax in axes:
+    ax.set_xlabel('Tiempo [s]'); ax.set_ylabel('Amplitud'); ax.grid(alpha=0.3)
+plt.tight_layout(); plt.show()
+
+# --- Análisis espectral ---
+fft_analisis(x_pulso,    t, fs, 'Pulso Rectangular')
+fft_analisis(x_escalon,  t, fs, 'Función Escalón')
+fft_analisis(x_senoidal, t, fs, 'Senoidal 20 Hz')
